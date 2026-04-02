@@ -75,7 +75,7 @@ const handleUpdate = (id) => {
 
   return (
     <div style={{ padding: "30px", maxWidth: "600px", margin: "auto" }}>
-      <h1 style={{ textAlign: "center" }}>To Do List</h1>
+      <h1 style={{ textAlign: "center" }}>MY To Do List</h1>
 
       <form onSubmit={inputSubmit} style={{ marginBottom: "20px" }}>
         <input

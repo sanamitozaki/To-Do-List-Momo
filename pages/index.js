@@ -4,25 +4,26 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
 
-  const [task, setTask] = useState([]);
+  const [task, setTask] = useState("");
+  const [userName, setUserName] = useState("");
   const [tasksArray, setTasksArray] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
 
-  // get data
+  const getData = async () => {
+    const url = "http://localhost:5000/tasks";
+    const taskList = await fetch(url);
+    const data = await taskList.json();
+    console.log("tasklist", data);
+    setTasksArray(data);
+  };
+
   useEffect(() => {
-    const getData = async () => {
-      const url = "http://localhost:5000/tasks";
-      const taskList = await fetch(url);
-      const data = await taskList.json();
-      console.log("tasklist", data);
-      setTasksArray(data);
-    };
     getData();
-  }, [task]);
+  }, []);
 
   const inputSubmit = async (e) => {
     e.preventDefault();
-    if (!task.trim()) return;
+    if (!task.trim() || !userName.trim()) return;
 
     if (editIndex !== null) {
       const url = "http://localhost:5000/tasks";
@@ -33,10 +34,11 @@ export default function Home() {
         },
         body: JSON.stringify({
           task: task,
+          user_name: userName,
         }),
       });
       const updatedTasks = tasksArray.map((item) =>
-        item.id === editIndex ? { ...item, task } : item
+        item.id === editIndex ? { ...item, task, user_name: userName } : item
       );
       setTasksArray(updatedTasks);
       setEditIndex(null);
@@ -49,11 +51,14 @@ export default function Home() {
         },
         body: JSON.stringify({
           task: task,
+          user_name: userName,
         }),
       });
     }
 
     setTask("");
+    setUserName("");
+    await getData();
   };
 
  const handleDelete = async (id) => {
@@ -65,19 +70,29 @@ export default function Home() {
 
   const filteredTasks = tasksArray.filter((item) => item.id !== id);
   setTasksArray(filteredTasks);
+  await getData();
 };
 
 const handleUpdate = (id) => {
   const selectedTask = tasksArray.find((item) => item.id === id);
   setEditIndex(id);
   setTask(selectedTask.task);
+  setUserName(selectedTask.user_name || "");
 };
 
   return (
     <div style={{ padding: "30px", maxWidth: "600px", margin: "auto" }}>
-      <h1 style={{ textAlign: "center" }}>MY To Do List</h1>
+      <h1 style={{ textAlign: "center" }}>My To Do List</h1>
 
-      <form onSubmit={inputSubmit} style={{ marginBottom: "20px" }}>
+      <form
+        onSubmit={inputSubmit}
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
         <input
           type="text"
           value={task}
@@ -85,9 +100,16 @@ const handleUpdate = (id) => {
           placeholder="Enter a task"
           style={{ padding: "8px", width: "70%" }}
         />
+        <input
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder="Enter your name"
+          style={{ padding: "8px", width: "40%" }}
+        />
         <button
           type="submit"
-          style={{ padding: "8px 12px", marginLeft: "10px", cursor: "pointer" }}
+          style={{ padding: "8px 12px", cursor: "pointer" }}
         >
           {editIndex !== null ? "Update" : "Submit"}
         </button>
@@ -97,7 +119,7 @@ const handleUpdate = (id) => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 3fr 2fr",
+            gridTemplateColumns: "1fr 3fr 2fr 2fr",
             backgroundColor: "#cccccc",
             color: "#000000",
             fontWeight: "bold",
@@ -107,6 +129,7 @@ const handleUpdate = (id) => {
         >
           <div>No</div>
           <div>Task</div>
+          <div>User</div>
           <div>Action</div>
         </div>
         {tasksArray && tasksArray.length === 0 ? (
@@ -120,7 +143,7 @@ const handleUpdate = (id) => {
               key={item.id}
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 3fr 2fr",
+                gridTemplateColumns: "1fr 3fr 2fr 2fr",
                 padding: "10px",
                 borderTop: "1px solid black",
                 textAlign: "center",
@@ -129,6 +152,7 @@ const handleUpdate = (id) => {
             >
               <div>{index + 1}</div>
               <div>{item.task}</div>
+              <div>{item.user_name || "-"}</div>
 
               <div
                 style={{

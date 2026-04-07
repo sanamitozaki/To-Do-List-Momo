@@ -15,4 +15,17 @@ db.connect((err) => {
   console.log("Connected to MySQL database");
 });
 
+db.query(
+  `CREATE TABLE IF NOT EXISTS tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`,
+  (err) => {
+    if (err) {
+      console.error("Failed to ensure tasks table:", err);
+    }
+  }
+);
+
 module.exports = db;
